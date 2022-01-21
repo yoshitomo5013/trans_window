@@ -11,13 +11,15 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 	// ウインドウモードで起動
 	ChangeWindowMode( TRUE );
 
-	constexpr int kScreeWidth = 640;
-	constexpr int kScreeHeight = 480;
+	constexpr int kScreeWidth = 1920;
+	constexpr int kScreeHeight = 1080;
 
 	SetGraphMode( kScreeWidth , kScreeHeight , 32 );
 
 	// 透過ウインドウ設定
 	SetUseBackBufferTransColorFlag( TRUE );
+
+	SetFullSceneAntiAliasingMode( 4 , 2 ); // フルスクリーンアンチエイリアスを有効
 
 	// ＤＸライブラリの初期化
 	if( DxLib_Init() < 0 ) return -1;
@@ -31,16 +33,37 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 	// 画像を読み込む際にアルファ値をRGB値に乗算するように設定する
 	SetUsePremulAlphaConvertLoad( TRUE );
 
+	// アンチエイリアスと縁取りの両方を行う
+	ChangeFontType( DX_FONTTYPE_ANTIALIASING_EDGE_4X4 );
+
+	// ZバッファとZバッファへの書き込みを有効にする
+	SetUseZBuffer3D( true );
+	SetWriteZBuffer3D( true );
+
+	MV1SetLoadModelUsePackDraw( true );// モデルの複数を有効
+
 	// 画像の読み込み
 	GrHandle = LoadGraph( "syaro_body.png" );
+	auto model = MV1LoadModel( "mmd/シャロちゃん Ver. 1.01/Sharo Kirima Ver. 1.01.pmx" );
+
+	// 初期アニメーション
+	constexpr int kStartAnimation = 0;
+
+	// アニメーション
+	int attach_no_ = MV1AttachAnim( model , kStartAnimation );
+	float totalTime = MV1GetAttachAnimTotalTime( model , attach_no_ );
+	float time = 0;
 
 	// 描画先を描画対象にできるアルファチャンネル付き画面にする
 	SetDrawScreen( Screen );
 
 	// 常に処理を実行
 	SetAlwaysRunFlag( true );
+	//SetUseLighting( false );
 
-	
+	// カメラ
+	SetCameraNearFar( 1.0f , 100.0f );
+	SetCameraPositionAndTarget_UpVecY( VGet( -20.0f , 18.0f , -20.0f ) , VGet( 0.0f , 11.0f , 0.0f ) );
 	
 	constexpr int kX = 0;
 	constexpr int kY = 1;
@@ -83,6 +106,12 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 			SetWindowPos( GetMainWindowHandle() , HWND_BOTTOM , 0 , 0 , 0 , 0 , SWP_NOMOVE | SWP_NOSIZE );
 		}
 
+		// アニメーション更新
+		time += 1.0f;
+		if( totalTime < time )time = 0;
+
+		MV1SetAttachAnimTime( model , attach_no_ , time );
+
 		// 画面をクリア
 		ClearDrawScreen();
 
@@ -105,17 +134,25 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 		SetWindowPosition( pos[ kX ] , pos[ kY ] );
 
 		// 画像を描画
-		DrawGraph( 0 , 0 , GrHandle , TRUE );
+		//DrawGraph( 0 , 0 , GrHandle , TRUE );
+		//DrawBox( 0 , 0 , kScreeWidth , kScreeHeight , 0xffffff, true );
+
+		MV1SetPosition( model , VGet( 0.0f , 0.0f , 0.0f ) );
+		MV1DrawModel( model );
+		DrawCube3D( VGet( 0.0f , 8.0f , 0.0f ) , VGet( 0.5f , 8.5f , -5.0f ) , 0xff0000 , 0xffffff , true );
 
 		// 描画先の画像をソフトイメージに取得する
-		GetDrawScreenSoftImage( 0 , 0 , 640 , 480 , SoftImage );
+		GetDrawScreenSoftImage( 0 , 0 , kScreeWidth , kScreeHeight , SoftImage );
 
 		// 取り込んだソフトイメージを使用して透過ウインドウの状態を更新する
 		UpdateLayerdWindowForPremultipliedAlphaSoftImage( SoftImage );
 
 		// 少し待つ
-		Sleep( 12 );
+		Sleep( 16 );
 	}
+
+	MV1DeleteModel( model );
+	InitGraph();
 
 	// ＤＸライブラリの後始末
 	DxLib_End();
