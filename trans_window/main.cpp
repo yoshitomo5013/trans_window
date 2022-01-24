@@ -42,12 +42,16 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 
 	MV1SetLoadModelUsePackDraw( true );// モデルの複数を有効
 
+	//SetUseLighting( false );
+
 	// 画像の読み込み
-	GrHandle = LoadGraph( "syaro_body.png" );
-	auto model = MV1LoadModel( "mmd/シャロちゃん Ver. 1.01/Sharo Kirima Ver. 1.01.pmx" );
+	//GrHandle = LoadGraph( "syaro_body.png" );
+	//auto model = MV1LoadModel( "mmd/シャロちゃん Ver. 1.01/Sharo Kirima Ver. 1.01.pmx" );
+	auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo's Default Swimsuit  Ver. 1.00.pmx" );
+	//auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo Kirima's Extra Swimsuit.pmx" );
 
 	// 初期アニメーション
-	constexpr int kStartAnimation = 0;
+	constexpr int kStartAnimation =0;
 
 	// アニメーション
 	int attach_no_ = MV1AttachAnim( model , kStartAnimation );
@@ -63,7 +67,7 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 
 	// カメラ
 	SetCameraNearFar( 1.0f , 100.0f );
-	SetCameraPositionAndTarget_UpVecY( VGet( -20.0f , 18.0f , -20.0f ) , VGet( 0.0f , 11.0f , 0.0f ) );
+	SetCameraPositionAndTarget_UpVecY( VGet( 0.0f , 15.0f , -20.0f ) , VGet( 0.0f , 14.0f , 0.0f ) );
 	
 	constexpr int kX = 0;
 	constexpr int kY = 1;
@@ -139,7 +143,7 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 
 		MV1SetPosition( model , VGet( 0.0f , 0.0f , 0.0f ) );
 		MV1DrawModel( model );
-		DrawCube3D( VGet( 0.0f , 8.0f , 0.0f ) , VGet( 0.5f , 8.5f , -5.0f ) , 0xff0000 , 0xffffff , true );
+		//DrawCube3D( VGet( 0.0f , 8.0f , 0.0f ) , VGet( 0.5f , 8.5f , -5.0f ) , 0xff0000 , 0xffffff , true );
 
 		// 描画先の画像をソフトイメージに取得する
 		GetDrawScreenSoftImage( 0 , 0 , kScreeWidth , kScreeHeight , SoftImage );
