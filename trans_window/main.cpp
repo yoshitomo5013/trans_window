@@ -46,12 +46,12 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 
 	// 画像の読み込み
 	//GrHandle = LoadGraph( "syaro_body.png" );
-	//auto model = MV1LoadModel( "mmd/シャロちゃん Ver. 1.01/Sharo Kirima Ver. 1.01.pmx" );
-	auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo's Default Swimsuit  Ver. 1.00.pmx" );
+	auto model = MV1LoadModel( "mmd/シャロちゃん Ver. 1.01/Sharo Kirima Ver. 1.01.pmx" );
+	//auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo's Default Swimsuit  Ver. 1.00.pmx" );
 	//auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo Kirima's Extra Swimsuit.pmx" );
 
 	// 初期アニメーション
-	constexpr int kStartAnimation =0;
+	constexpr int kStartAnimation =2;
 
 	// アニメーション
 	int attach_no_ = MV1AttachAnim( model , kStartAnimation );
@@ -66,8 +66,11 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 	//SetUseLighting( false );
 
 	// カメラ
+	constexpr float kCameraSpeed = 0.1f;
+	VECTOR camera=VGet( 0.0f , 15.0f , -40.0f );
+	VECTOR target = VGet( 0.0f , 14.0f , 0.0f );
+	SetCameraPositionAndTarget_UpVecY( camera,target );
 	SetCameraNearFar( 1.0f , 100.0f );
-	SetCameraPositionAndTarget_UpVecY( VGet( 0.0f , 15.0f , -20.0f ) , VGet( 0.0f , 14.0f , 0.0f ) );
 	
 	constexpr int kX = 0;
 	constexpr int kY = 1;
@@ -81,21 +84,62 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 	while( ProcessMessage() == 0 && CheckHitKey( KEY_INPUT_ESCAPE ) == 0 )
 	{
 		// 処理
-		if( CheckHitKey( KEY_INPUT_UP ) )
+		if( CheckHitKey( KEY_INPUT_W ) )// ウィンドウ
 		{
-			pos[ kY ] -= kSpeed;
+			if( CheckHitKey( KEY_INPUT_UP ) )
+			{
+				pos[ kY ] -= kSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_DOWN ) )
+			{
+				pos[ kY ] += kSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_RIGHT ) )
+			{
+				pos[ kX ] += kSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_LEFT ) )
+			{
+				pos[ kX ] -= kSpeed;
+			}
 		}
-		if( CheckHitKey( KEY_INPUT_DOWN ) )
+		else if( CheckHitKey( KEY_INPUT_LSHIFT ) )// カメラ座標
 		{
-			pos[ kY ] += kSpeed;
+			if( CheckHitKey( KEY_INPUT_UP ) )
+			{
+				camera.z += kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_DOWN ) )
+			{
+				camera.z -= kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_RIGHT ) )
+			{
+				camera.x += kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_LEFT ) )
+			{
+				camera.x -= kCameraSpeed;
+			}
 		}
-		if( CheckHitKey( KEY_INPUT_RIGHT ) )
+		else// カメラ注視点
 		{
-			pos[ kX ] += kSpeed;
-		}
-		if( CheckHitKey( KEY_INPUT_LEFT ) )
-		{
-			pos[ kX ] -= kSpeed;
+			if( CheckHitKey( KEY_INPUT_UP ) )
+			{
+				target.y += kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_DOWN ) )
+			{
+				target.y -= kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_RIGHT ) )
+			{
+				target.x += kCameraSpeed;
+			}
+			if( CheckHitKey( KEY_INPUT_LEFT ) )
+			{
+				target.x -= kCameraSpeed;
+			}
 		}
 
 		if( CheckHitKey( KEY_INPUT_LCONTROL ) && CheckHitKey( KEY_INPUT_T ) )
@@ -112,9 +156,16 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 
 		// アニメーション更新
 		time += 1.0f;
-		if( totalTime < time )time = 0;
+		if( totalTime < time )
+		{
+			MV1DetachAnim( model , attach_no_ );
+			attach_no_ = MV1AttachAnim( model , GetRand( 2 ) );
+			totalTime = MV1GetAttachAnimTotalTime( model , attach_no_ );
+			time = 0;
+		}
 
 		MV1SetAttachAnimTime( model , attach_no_ , time );
+		SetCameraPositionAndTarget_UpVecY( camera ,target );
 
 		// 画面をクリア
 		ClearDrawScreen();
