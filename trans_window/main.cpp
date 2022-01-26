@@ -51,10 +51,11 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 	//auto model = MV1LoadModel( "mmd/桐間紗路の水着 Ver. 1.00/Sharo Kirima's Extra Swimsuit.pmx" );
 
 	// 初期アニメーション
-	constexpr int kStartAnimation =2;
+	//constexpr int kStartAnimation =2;
 
 	// アニメーション
-	int attach_no_ = MV1AttachAnim( model , kStartAnimation );
+	int animNum = MV1GetAnimNum( model );
+	int attach_no_ = MV1AttachAnim( model , GetRand(animNum) );
 	float totalTime = MV1GetAttachAnimTotalTime( model , attach_no_ );
 	float time = 0;
 
@@ -159,7 +160,7 @@ int WINAPI WinMain( HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdL
 		if( totalTime < time )
 		{
 			MV1DetachAnim( model , attach_no_ );
-			attach_no_ = MV1AttachAnim( model , GetRand( 2 ) );
+			attach_no_ = MV1AttachAnim( model , GetRand( animNum ) );
 			totalTime = MV1GetAttachAnimTotalTime( model , attach_no_ );
 			time = 0;
 		}
